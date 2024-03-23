@@ -42,11 +42,30 @@ const grouped = groupBlockNames(blockStates);
 
 const groupedMapped = Object.fromEntries(
   Object.entries(grouped)
-    .map(([key, value]) => [key, value?.map(state => state.states)])
+    .map(([key, value]) => [key, value!.map(state => state.states)])
 );
 // console.log(groupedMapped);
 
-console.log(stringify(groupedMapped));
+// console.log(stringify(groupedMapped));
+
+const deduped = Object.fromEntries(
+  Object.entries(groupedMapped)
+    .map(([key, variant]) => {
+      const state: Record<string, Set<object>> = {};
+      for (const entry of variant){
+        for (const [key, value] of Object.entries(entry)){
+          if (!(key in state)) state[key] = new Set();
+          state[key]!.add(value);
+        }
+      }
+      return [key, Object.fromEntries(Object.entries(state)
+        .map(([key, value]) => [key, [...value]]))
+      ];
+  })
+);
+// console.log(deduped);
+
+console.log(stringify(deduped));
 
 /**
  * Converts a Prismarine-NBT based object to an NBTify one.
