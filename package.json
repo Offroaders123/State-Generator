@@ -1,0 +1,13 @@
+{
+  "name": "state-generator",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "typescript": "^5.4.3"
+  },
+  "dependencies": {
+    "nbtify": "^1.90.1",
+    "prismarine-nbt": "^2.5.0"
+  }
+}
