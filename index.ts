@@ -28,10 +28,17 @@ await Promise.all(blockStates.map(async state => {
   state.states = converted;
 }));
 
-// console.log(blockStates);
+// const stringy: string = stringify(blockStates, { space: 2 });
+// console.log(stringy);
 
-const stringy: string = stringify(blockStates, { space: 2 });
-console.log(stringy);
+function groupBlockNames(blockStates: BlockState[]): Partial<Record<string, BlockState[]>> {
+  return Object.groupBy(blockStates, state => state.name);
+}
+
+const grouped = groupBlockNames(blockStates);
+// console.log(grouped);
+
+console.log(stringify(grouped));
 
 /**
  * Converts a Prismarine-NBT based object to an NBTify one.
