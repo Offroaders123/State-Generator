@@ -38,7 +38,15 @@ function groupBlockNames(blockStates: BlockState[]): Partial<Record<string, Bloc
 const grouped = groupBlockNames(blockStates);
 // console.log(grouped);
 
-console.log(stringify(grouped));
+// console.log(stringify(grouped));
+
+const groupedMapped = Object.fromEntries(
+  Object.entries(grouped)
+    .map(([key, value]) => [key, value?.map(state => state.states)])
+);
+// console.log(groupedMapped);
+
+console.log(stringify(groupedMapped));
 
 /**
  * Converts a Prismarine-NBT based object to an NBTify one.
