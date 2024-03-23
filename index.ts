@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import pnbt from "prismarine-nbt";
-import { read, stringify } from "nbtify";
+import { Float32, Int16, Int32, Int8, TAG, Tag, getTagType, read, stringify } from "nbtify";
 
 interface BlockState {
   name: string;
@@ -52,14 +52,28 @@ const deduped = Object.fromEntries(
   Object.entries(groupedMapped)
     .map(([key, variant]) => {
       const state: Record<string, Set<object>> = {};
+      let type: TAG;
       for (const entry of variant){
         for (const [key, value] of Object.entries(entry)){
+          type = getTagType(value as Tag);
           if (!(key in state)) state[key] = new Set();
-          state[key]!.add(value);
+          state[key]!.add(value.valueOf());
         }
       }
       return [key, Object.fromEntries(Object.entries(state)
-        .map(([key, value]) => [key, [...value]]))
+        .map(([key, value]) =>
+          [key, [...value]
+            .map(pos => {
+              switch (type){
+                case TAG.BYTE: return new Int8(pos as unknown as number);
+                case TAG.SHORT: return new Int16(pos as unknown as number);
+                case TAG.INT: return new Int32(pos as unknown as number);
+                case TAG.FLOAT: return new Float32(pos as unknown as number);
+                default: return pos;
+              }
+            })
+          ]
+        ))
       ];
   })
 );
