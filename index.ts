@@ -62,7 +62,7 @@ const deduped = Object.fromEntries(
         }
       }
       return [key, Object.fromEntries(Object.entries(state)
-        .map(([key, value]) =>
+        .map<[string, object[]]>(([key, value]) =>
           [key, [...value]
             .map(pos => {
               switch (type){
@@ -74,7 +74,8 @@ const deduped = Object.fromEntries(
               }
             })
           ]
-        ))
+        )
+        .sort((previous, next) => previous[0].localeCompare(next[0])))
       ];
   })
   .sort((previous, next) => previous[0].localeCompare(next[0]))
