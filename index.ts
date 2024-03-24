@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import pnbt from "prismarine-nbt";
 import { Float32, Int16, Int32, Int8, TAG, Tag, getTagType, read, stringify } from "nbtify";
+import { definition } from "./definition.js";
 
 interface BlockState {
   name: string;
@@ -77,9 +78,12 @@ const deduped = Object.fromEntries(
       ];
   })
 );
-// console.log(deduped);
+console.log(deduped);
 
-console.log(stringify(deduped));
+// console.log(stringify(deduped));
+
+const types = definition(deduped, { name: "BlockStateMap" });
+console.log(types);
 
 /**
  * Converts a Prismarine-NBT based object to an NBTify one.
