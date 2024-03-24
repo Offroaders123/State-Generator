@@ -3,6 +3,8 @@ import pnbt from "prismarine-nbt";
 import { Float32, Int16, Int32, Int8, TAG, Tag, getTagType, read, stringify } from "nbtify";
 import { definition } from "./definition.js";
 
+import type { Root } from "./definition.js";
+
 interface BlockState {
   name: string;
   states: Record<string, object>;
@@ -79,13 +81,13 @@ const deduped = Object.fromEntries(
       ];
   })
   .sort((previous, next) => previous[0].localeCompare(next[0]))
-);
-console.log(deduped);
+) satisfies Root;
+// console.log(deduped);
 
 // console.log(stringify(deduped));
 
 const types = definition(deduped, { name: "BlockStateNameMap" });
-// console.log(types);
+console.log(types);
 
 /**
  * Converts a Prismarine-NBT based object to an NBTify one.

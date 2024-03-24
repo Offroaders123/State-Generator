@@ -1,6 +1,8 @@
 import { NBTData, TAG, isTag, getTagType } from "nbtify";
 
-import type { Tag, ListTag, CompoundTag, RootTagLike, RootTag } from "nbtify";
+import type { Tag, ListTag, CompoundTag } from "nbtify";
+
+export type Root = Record<string, [string, Record<string, object[]>]>;
 
 export interface DefinitionOptions {
   name: string;
@@ -9,11 +11,7 @@ export interface DefinitionOptions {
 /**
  * Generates a TypeScript interface definition from an NBTData object.
 */
-export function definition<T extends RootTagLike = RootTag>(data: T | NBTData<T>, options: DefinitionOptions): string {
-  if (data instanceof NBTData){
-    data = data.data;
-  }
-
+export function definition(data: Root, options: DefinitionOptions): string {
   if (typeof data !== "object" || data === null){
     throw new TypeError("First parameter must be an object");
   }
@@ -28,15 +26,15 @@ export interface DefinitionWriterOptions {
 /**
  * The base implementation to generate a TypeScript interface definition from an NBTData object.
 */
-export class DefinitionWriter {
+class DefinitionWriter {
   #space!: string;
   #level!: number;
+  #interfaceResults: string[] = [];
 
   /**
    * Initiates the writer over an NBTData object.
   */
-  write<T extends RootTagLike = RootTag>(data: T | NBTData<T>, options: DefinitionWriterOptions): string;
-  write<T extends RootTagLike = RootTag>(data: T | NBTData<T>, { name }: DefinitionWriterOptions): string {
+  write(data: Root, { name }: DefinitionWriterOptions): string {
     if (data instanceof NBTData){
       data = data.data;
     }
@@ -51,7 +49,19 @@ export class DefinitionWriter {
     this.#space = "  ";
     this.#level = 1;
 
-    return `interface ${name} ${this.#writeCompound(data as CompoundTag)}`;
+    return [`export interface ${name} ${this.#writeRoot(data)}`, ...this.#interfaceResults].join("\n\n");
+  }
+
+  #writeRoot(value: Root): string {
+    const fancy = (this.#space !== "");
+    return `{${Object.entries(value).filter((entry): entry is [string,[string,Record<string,object[]>]] => isTag(entry[1][1])).map(([key,value]) => `${fancy ? `\n${(this.#space satisfies string).repeat(this.#level)}` : ""}${/^[0-9a-z_\-.+]+$/i.test(key) ? key : this.#writeStringLiteral(key)}:${fancy ? " " : ""}${(() => {
+      this.#level += 1;
+      const referenceResult: string = value[0];
+      this.#level -= 1;
+      const interfaceResult: string = `export interface ${referenceResult} ${this.#writeTag(value[1] as Tag)}`;
+      this.#interfaceResults.push(interfaceResult);
+      return `${referenceResult};`;
+    })() satisfies string}`).join("")}${fancy && Object.keys(value).length !== 0 ? `\n${this.#space.repeat(this.#level - 1)}` : ""}}`;
   }
 
   #writeTag(value: Tag): string {
