@@ -81,15 +81,17 @@ export class DefinitionWriter {
 
   #writeList(value: ListTag<Tag>): string {
     value = value.filter(isTag);
-    const fancy = (this.#space !== "");
-    const type: TAG = (value[0] !== undefined) ? getTagType(value[0]) : TAG.END;
-    const isIndentedList = fancy && new Set<TAG>([TAG.BYTE_ARRAY,TAG.LIST,TAG.COMPOUND,TAG.INT_ARRAY,TAG.LONG_ARRAY]).has(type);
-    return `[${value.map(entry => `${isIndentedList ? `\n${this.#space.repeat(this.#level)}` : ""}${(() => {
-      this.#level += 1;
-      const result = this.#writeTag(entry);
-      this.#level -= 1;
-      return result;
-    })() satisfies string}`).join(`,${fancy && !isIndentedList ? " " : ""}`)}${isIndentedList ? `\n${this.#space.repeat(this.#level - 1)}` : ""}]`;
+    // const fancy = (this.#space !== "");
+    // const type: TAG = (value[0] !== undefined) ? getTagType(value[0]) : TAG.END;
+    // const isIndentedList = fancy && new Set<TAG>([TAG.BYTE_ARRAY,TAG.LIST,TAG.COMPOUND,TAG.INT_ARRAY,TAG.LONG_ARRAY]).has(type);
+    // return `[${value.map(entry => `${isIndentedList ? `\n${this.#space.repeat(this.#level)}` : ""}${(() => {
+    //   this.#level += 1;
+    //   const result = this.#writeTag(entry);
+    //   this.#level -= 1;
+    //   return result;
+    // })() satisfies string}`).join(`,${fancy && !isIndentedList ? " " : ""}`)}${isIndentedList ? `\n${this.#space.repeat(this.#level - 1)}` : ""}]`;
+    const typeName: string = this.#writeTag(value[0] ?? value);
+    return `${typeName}<${value.map(tag => typeof tag.valueOf() === "string" ? `"${tag.valueOf()}"` : tag.valueOf()).join(" | ")}>`;
   }
 
   #writeCompound(value: CompoundTag): string {
