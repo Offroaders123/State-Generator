@@ -51,7 +51,7 @@ const groupedMapped = Object.fromEntries(
 
 const deduped = Object.fromEntries(
   Object.entries(groupedMapped)
-    .map(([key, variant]) => {
+    .map<[string, Record<string, object[]>]>(([key, variant]) => {
       const state: Record<string, Set<object>> = {};
       let type: TAG;
       for (const entry of variant){
@@ -77,12 +77,13 @@ const deduped = Object.fromEntries(
         ))
       ];
   })
+  .sort((previous, next) => previous[0].localeCompare(next[0]))
 );
 // console.log(deduped);
 
 // console.log(stringify(deduped));
 
-const types = definition(deduped, { name: "BlockStateMap" });
+const types = definition(deduped, { name: "BlockStateNameMap" });
 console.log(types);
 
 /**
