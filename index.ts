@@ -51,7 +51,7 @@ const groupedMapped = Object.fromEntries(
 
 const deduped = Object.fromEntries(
   Object.entries(groupedMapped)
-    .map<[string, Record<string, object[]>]>(([key, variant]) => {
+    .map<[string, [string, Record<string, object[]>]]>(([key, variant]) => {
       const state: Record<string, Set<object>> = {};
       let type: TAG;
       for (const entry of variant){
@@ -61,7 +61,7 @@ const deduped = Object.fromEntries(
           state[key]!.add(value.valueOf());
         }
       }
-      return [key, Object.fromEntries(Object.entries(state)
+      return [key, [snake2PascalCase(key), Object.fromEntries(Object.entries(state)
         .map<[string, object[]]>(([key, value]) =>
           [key, [...value]
             .map(pos => {
@@ -75,17 +75,17 @@ const deduped = Object.fromEntries(
             })
           ]
         )
-        .sort((previous, next) => previous[0].localeCompare(next[0])))
+        .sort((previous, next) => previous[0].localeCompare(next[0])))]
       ];
   })
   .sort((previous, next) => previous[0].localeCompare(next[0]))
 );
-// console.log(deduped);
+console.log(deduped);
 
 // console.log(stringify(deduped));
 
 const types = definition(deduped, { name: "BlockStateNameMap" });
-console.log(types);
+// console.log(types);
 
 /**
  * Converts a Prismarine-NBT based object to an NBTify one.
@@ -94,4 +94,14 @@ console.log(types);
  */
 async function fromPtoIfy<T extends object>(states: T): Promise<T> {
   return (await read<T>(pnbt.writeUncompressed(pnbt.comp(states) as pnbt.NBT, "big"), { bedrockLevel: false })).data;
+}
+
+function snake2CamelCase(string: string): string {
+  return string
+    .replace(/_(\w)/g, (_$, $1) => $1.toUpperCase());
+}
+
+function snake2PascalCase(string: string): string {
+  const s: string = snake2CamelCase(string);
+  return `${s.charAt(0).toUpperCase()}${s.substr(1)}`; 
 }
