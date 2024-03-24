@@ -1,6 +1,6 @@
 import { NBTData, TAG, isTag, getTagType } from "nbtify";
 
-import type { Tag, ListTag, CompoundTag } from "nbtify";
+import type { Tag, ListTag, CompoundTag, RootTagLike, RootTag } from "nbtify";
 
 export interface DefinitionOptions {
   name: string;
@@ -9,8 +9,7 @@ export interface DefinitionOptions {
 /**
  * Generates a TypeScript interface definition from an NBTData object.
 */
-export function definition<T extends CompoundTag>(data: T | NBTData<T>, options: DefinitionOptions): string;
-export function definition<T extends CompoundTag>(data: T | NBTData<T>, { name }: DefinitionOptions): string {
+export function definition<T extends RootTagLike = RootTag>(data: T | NBTData<T>, options: DefinitionOptions): string {
   if (data instanceof NBTData){
     data = data.data;
   }
@@ -18,11 +17,8 @@ export function definition<T extends CompoundTag>(data: T | NBTData<T>, { name }
   if (typeof data !== "object" || data === null){
     throw new TypeError("First parameter must be an object");
   }
-  if (typeof name !== "string"){
-    throw new TypeError("Name option must be a string");
-  }
 
-  return new DefinitionWriter().write(data,{ name });
+  return new DefinitionWriter().write(data,options);
 }
 
 export interface DefinitionWriterOptions {
@@ -39,8 +35,8 @@ export class DefinitionWriter {
   /**
    * Initiates the writer over an NBTData object.
   */
-  write<T extends CompoundTag>(data: T | NBTData<T>, options: DefinitionWriterOptions): string;
-  write<T extends CompoundTag>(data: T | NBTData<T>, { name }: DefinitionWriterOptions): string {
+  write<T extends RootTagLike = RootTag>(data: T | NBTData<T>, options: DefinitionWriterOptions): string;
+  write<T extends RootTagLike = RootTag>(data: T | NBTData<T>, { name }: DefinitionWriterOptions): string {
     if (data instanceof NBTData){
       data = data.data;
     }
@@ -55,7 +51,7 @@ export class DefinitionWriter {
     this.#space = "  ";
     this.#level = 1;
 
-    return `interface ${name} ${this.#writeCompound(data)}`;
+    return `interface ${name} ${this.#writeCompound(data as CompoundTag)}`;
   }
 
   #writeTag(value: Tag): string {
