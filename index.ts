@@ -7,7 +7,7 @@ import type { Root } from "./definition.js";
 
 interface BlockState {
   name: string;
-  states: Record<string, object>;
+  states: Record<string, Tag>;
   hash: number;
 }
 
@@ -31,6 +31,8 @@ await Promise.all(blockStates.map(async state => {
   state.states = converted;
 }));
 
+// blockStates = blockStates.filter(state => /wall/i.test(state.name));
+
 // const stringy: string = stringify(blockStates, { space: 2 });
 // console.log(stringy);
 
@@ -53,18 +55,16 @@ const groupedMapped = Object.fromEntries(
 
 const deduped = Object.fromEntries(
   Object.entries(groupedMapped)
-    .map<[string, [string, Record<string, object[]>]]>(([key, variant]) => {
-      const state: Record<string, Set<object>> = {};
-      let type: TAG;
+    .map<[string, [string, Record<string, Tag[]>]]>(([key, variant]) => {
+      const state: Record<string, [TAG, Set<Tag>]> = {};
       for (const entry of variant){
         for (const [key, value] of Object.entries(entry)){
-          type = getTagType(value as Tag);
-          if (!(key in state)) state[key] = new Set();
-          state[key]!.add(value.valueOf());
+          if (!(key in state)) state[key] = [getTagType(value), new Set()];
+          state[key]![1].add(value.valueOf() as Tag);
         }
       }
       return [key, [snake2PascalCase(key), Object.fromEntries(Object.entries(state)
-        .map<[string, object[]]>(([key, value]) =>
+        .map<[string, Tag[]]>(([key, [type, value]]) =>
           [key, [...value]
             .map(pos => {
               switch (type){
@@ -79,8 +79,8 @@ const deduped = Object.fromEntries(
         )
         .sort((previous, next) => previous[0].localeCompare(next[0])))]
       ];
-  })
-  .sort((previous, next) => previous[0].localeCompare(next[0]))
+    })
+    .sort((previous, next) => previous[0].localeCompare(next[0]))
 ) satisfies Root;
 // console.log(deduped);
 

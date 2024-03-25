@@ -2,7 +2,7 @@ import { NBTData, TAG, isTag, getTagType } from "nbtify";
 
 import type { Tag, ListTag, CompoundTag } from "nbtify";
 
-export type Root = Record<string, [string, Record<string, object[]>]>;
+export type Root = Record<string, [string, Record<string, Tag[]>]>;
 
 export interface DefinitionOptions {
   name: string;
@@ -54,11 +54,11 @@ class DefinitionWriter {
 
   #writeRoot(value: Root): string {
     const fancy = (this.#space !== "");
-    return `{${Object.entries(value).filter((entry): entry is [string,[string,Record<string,object[]>]] => isTag(entry[1][1])).map(([key,value]) => `${fancy ? `\n${(this.#space satisfies string).repeat(this.#level)}` : ""}${/^[0-9a-z_\-.+]+$/i.test(key) ? key : this.#writeStringLiteral(key)}:${fancy ? " " : ""}${(() => {
+    return `{${Object.entries(value).filter((entry): entry is [string,[string,Record<string,Tag[]>]] => isTag(entry[1][1])).map(([key,value]) => `${fancy ? `\n${(this.#space satisfies string).repeat(this.#level)}` : ""}${/^[0-9a-z_\-.+]+$/i.test(key) ? key : this.#writeStringLiteral(key)}:${fancy ? " " : ""}${(() => {
       this.#level += 1;
       const referenceResult: string = value[0];
       this.#level -= 1;
-      const interfaceResult: string = `export interface ${referenceResult} ${this.#writeTag(value[1] as Tag)}`;
+      const interfaceResult: string = `export interface ${referenceResult} ${this.#writeTag(value[1])}`;
       this.#interfaceResults.push(interfaceResult);
       return `${referenceResult};`;
     })() satisfies string}`).join("")}${fancy && Object.keys(value).length !== 0 ? `\n${this.#space.repeat(this.#level - 1)}` : ""}}`;
